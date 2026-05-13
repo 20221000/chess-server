@@ -4,6 +4,9 @@ import com.chess.server.dto.request.LoginRequest;
 import com.chess.server.dto.request.SignupRequest;
 import com.chess.server.dto.response.AuthResponse;
 import com.chess.server.entity.User;
+import com.chess.server.exception.DuplicateException;
+import com.chess.server.exception.NotFoundException;
+import com.chess.server.exception.UnauthorizedException;
 import com.chess.server.repository.UserRepository;
 import com.chess.server.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +29,13 @@ public class AuthService {
 
         // 중복 확인
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new DuplicateException("이미 사용 중인 아이디입니다.");
         }
         if (userRepository.existsByNickname(request.getNickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new DuplicateException("이미 사용 중인 닉네임입니다.");
         }
         if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new DuplicateException("이미 사용 중인 이메일입니다.");
         }
 
         // 비밀번호 암호화 후 저장
@@ -52,11 +55,11 @@ public class AuthService {
 
         // 유저 존재 확인
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 틀렸습니다."));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 아이디입니다."));
 
         // 비밀번호 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("아이디 또는 비밀번호가 틀렸습니다.");
+            throw new UnauthorizedException("아이디 또는 비밀번호가 틀렸습니다.");
         }
 
         // JWT 토큰 발급 후 반환

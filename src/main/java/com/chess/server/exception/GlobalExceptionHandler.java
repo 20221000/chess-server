@@ -6,16 +6,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-// 전역 예외 처리 (모든 Controller의 예외를 여기서 처리)
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 비즈니스 로직 예외 처리 (중복 아이디, 잘못된 비밀번호 등)
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
+    // BusinessException 하위 예외 통합 처리 (404, 409, 401 등)
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(400, e.getMessage()));
+                .status(e.getStatus())
+                .body(new ErrorResponse(e.getStatus().value(), e.getMessage()));
     }
 
     // 유효성 검사 실패 처리 (@NotBlank, @Size 등)
