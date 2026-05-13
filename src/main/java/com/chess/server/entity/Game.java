@@ -20,9 +20,9 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 어느 방의 게임인지
+    // 어느 방의 게임인지 나와의 대전인지 파악
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = true)
     private GameRoom gameRoom;
 
     // 백 기물 플레이어
