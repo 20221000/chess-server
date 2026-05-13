@@ -4,6 +4,7 @@ import com.chess.server.dto.response.GameRecordResponse;
 import com.chess.server.dto.response.UserSearchResponse;
 import com.chess.server.entity.GameRecord;
 import com.chess.server.entity.User;
+import com.chess.server.exception.NotFoundException;
 import com.chess.server.repository.GameRecordRepository;
 import com.chess.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class UserSearchService {
     public UserSearchResponse searchUser(String nickname) {
 
         User user = userRepository.findByNickname(nickname)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         return new UserSearchResponse(user);
     }
@@ -35,7 +36,7 @@ public class UserSearchService {
     public List<GameRecordResponse> getUserPublicRecords(Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         return gameRecordRepository
                 .findByOwnerAndVisibilityOrderByCreatedAtDesc(

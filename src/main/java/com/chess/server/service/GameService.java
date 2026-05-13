@@ -3,6 +3,8 @@ package com.chess.server.service;
 import com.chess.server.dto.request.GameMoveRequest;
 import com.chess.server.dto.response.GameStateResponse;
 import com.chess.server.entity.*;
+import com.chess.server.exception.BadRequestException;
+import com.chess.server.exception.NotFoundException;
 import com.chess.server.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class GameService {
     public GameStateResponse startGame(Long roomId) {
 
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("방을 찾을 수 없습니다."));
 
         // 준비 완료 플레이어 확인
         List<GamePlayer> readyPlayers = gamePlayerRepository
@@ -35,7 +37,7 @@ public class GameService {
                 .toList();
 
         if (readyPlayers.size() < 2) {
-            throw new IllegalArgumentException("2명이 준비해야 게임을 시작할 수 있습니다.");
+            throw new BadRequestException("2명이 준비해야 게임을 시작할 수 있습니다.");
         }
 
         // 랜덤으로 흑백 배정
@@ -63,10 +65,10 @@ public class GameService {
     public GameStateResponse makeMove(GameMoveRequest request, String username) {
 
         Game game = gameRepository.findById(request.getGameId())
-                .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("게임을 찾을 수 없습니다."));
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         // 현재 턴 플레이어 확인
         validateTurn(game, user);
@@ -98,7 +100,7 @@ public class GameService {
     public void finishGame(Long gameId, Game.GameResult result) {
 
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("게임을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("게임을 찾을 수 없습니다."));
 
         game.finish(result);
         gameRepository.save(game);
@@ -116,7 +118,7 @@ public class GameService {
                 && game.getBlackPlayer().getId().equals(user.getId());
 
         if (!isWhiteTurn && !isBlackTurn) {
-            throw new IllegalArgumentException("현재 본인의 턴이 아닙니다.");
+            throw new BadRequestException("현재 본인의 턴이 아닙니다.");
         }
     }
 }

@@ -5,6 +5,9 @@ import com.chess.server.dto.response.GameRoomResponse;
 import com.chess.server.entity.GamePlayer;
 import com.chess.server.entity.GameRoom;
 import com.chess.server.entity.User;
+import com.chess.server.exception.BadRequestException;
+import com.chess.server.exception.DuplicateException;
+import com.chess.server.exception.NotFoundException;
 import com.chess.server.repository.GamePlayerRepository;
 import com.chess.server.repository.GameRoomRepository;
 import com.chess.server.repository.UserRepository;
@@ -28,7 +31,7 @@ public class GameRoomService {
     public GameRoomResponse createRoom(CreateRoomRequest request, String username) {
 
         User host = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         GameRoom gameRoom = GameRoom.builder()
                 .title(request.getTitle())
@@ -68,25 +71,25 @@ public class GameRoomService {
     public GameRoomResponse joinRoom(Long roomId, String username) {
 
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("방을 찾을 수 없습니다."));
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         // 이미 입장한 유저인지 확인
         if (gamePlayerRepository.findByGameRoomAndUser(gameRoom, user).isPresent()) {
-            throw new IllegalArgumentException("이미 입장한 방입니다.");
+            throw new DuplicateException("이미 입장한 방입니다.");
         }
 
         // 최대 인원 확인
         int currentPlayers = gamePlayerRepository.countByGameRoom(gameRoom);
         if (currentPlayers >= gameRoom.getMaxPlayers()) {
-            throw new IllegalArgumentException("방이 가득 찼습니다.");
+            throw new BadRequestException("방이 가득 찼습니다.");
         }
 
         // 게임 중인 방 입장 불가
         if (gameRoom.getStatus() == GameRoom.RoomStatus.PLAYING) {
-            throw new IllegalArgumentException("이미 게임이 진행 중인 방입니다.");
+            throw new BadRequestException("이미 게임이 진행 중인 방입니다.");
         }
 
         GamePlayer gamePlayer = GamePlayer.builder()
@@ -104,13 +107,13 @@ public class GameRoomService {
     public void leaveRoom(Long roomId, String username) {
 
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("방을 찾을 수 없습니다."));
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         GamePlayer gamePlayer = gamePlayerRepository.findByGameRoomAndUser(gameRoom, user)
-                .orElseThrow(() -> new IllegalArgumentException("입장한 방이 아닙니다."));
+                .orElseThrow(() -> new BadRequestException("입장한 방이 아닙니다."));
 
         gamePlayerRepository.delete(gamePlayer);
 
@@ -126,13 +129,13 @@ public class GameRoomService {
     public void ready(Long roomId, String username) {
 
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("방을 찾을 수 없습니다."));
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         GamePlayer gamePlayer = gamePlayerRepository.findByGameRoomAndUser(gameRoom, user)
-                .orElseThrow(() -> new IllegalArgumentException("입장한 방이 아닙니다."));
+                .orElseThrow(() -> new BadRequestException("입장한 방이 아닙니다."));
 
         gamePlayer.ready();
         gamePlayerRepository.save(gamePlayer);
@@ -143,13 +146,13 @@ public class GameRoomService {
     public void cancelReady(Long roomId, String username) {
 
         GameRoom gameRoom = gameRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("방을 찾을 수 없습니다."));
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
         GamePlayer gamePlayer = gamePlayerRepository.findByGameRoomAndUser(gameRoom, user)
-                .orElseThrow(() -> new IllegalArgumentException("입장한 방이 아닙니다."));
+                .orElseThrow(() -> new BadRequestException("입장한 방이 아닙니다."));
 
         gamePlayer.cancelReady();
         gamePlayerRepository.save(gamePlayer);
