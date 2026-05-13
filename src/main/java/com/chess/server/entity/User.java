@@ -60,4 +60,9 @@ public class User {
     public void updateEmail(String email) {
         this.email = email;
     }
+
+    // 회원 탈퇴 (계정 비활성화)
+    public void withdraw() {
+        this.status = UserStatus.INACTIVE;
+    }
 }

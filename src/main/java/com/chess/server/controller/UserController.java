@@ -60,4 +60,12 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(userService.getMyStats(userDetails.getUsername()));
     }
+
+    // 회원 탈퇴
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdraw(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        userService.withdraw(userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

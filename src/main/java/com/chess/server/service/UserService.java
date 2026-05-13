@@ -101,4 +101,11 @@ public class UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 유저입니다."));
     }
+
+    // 회원 탈퇴
+    @Transactional
+    public void withdraw(String username) {
+        User user = findUserByUsername(username);
+        user.withdraw();
+    }
 }

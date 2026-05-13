@@ -9,6 +9,7 @@ import com.chess.server.exception.NotFoundException;
 import com.chess.server.exception.UnauthorizedException;
 import com.chess.server.repository.UserRepository;
 import com.chess.server.util.JwtUtil;
+import com.chess.server.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,11 @@ public class AuthService {
         // 비밀번호 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("아이디 또는 비밀번호가 틀렸습니다.");
+        }
+
+        // 탈퇴한 계정 확인
+        if (user.getStatus() == User.UserStatus.INACTIVE) {
+            throw new BadRequestException("탈퇴한 계정입니다.");
         }
 
         // JWT 토큰 발급 후 반환
