@@ -54,4 +54,23 @@ public class GameRoomController {
         gameRoomService.leaveRoom(roomId, userDetails.getUsername());
         return ResponseEntity.ok("퇴장 완료");
     }
+
+    // 준비 / 준비 취소
+    @PostMapping("/{roomId}/ready")
+    public ResponseEntity<String> ready(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        gameRoomService.ready(roomId, userDetails.getUsername());
+        return ResponseEntity.ok("준비 완료");
+    }
+
+    @PostMapping("/{roomId}/cancel-ready")
+    public ResponseEntity<String> cancelReady(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        gameRoomService.cancelReady(roomId, userDetails.getUsername());
+        return ResponseEntity.ok("준비 취소");
+    }
 }

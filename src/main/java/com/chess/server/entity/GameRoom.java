@@ -50,4 +50,14 @@ public class GameRoom {
     public void close() {
         this.status = RoomStatus.CLOSED;
     }
+
+    // 게임 시작 시 방 상태 변경
+    public void startGame() {
+        this.status = RoomStatus.PLAYING;
+    }
+
+    // 게임 종료 시 방 상태 대기중으로 변경
+    public void waitGame() {
+        this.status = RoomStatus.WAITING;
+    }
 }

@@ -120,4 +120,38 @@ public class GameRoomService {
             gameRoomRepository.save(gameRoom);
         }
     }
+
+    // 준비 처리
+    @Transactional
+    public void ready(Long roomId, String username) {
+
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        GamePlayer gamePlayer = gamePlayerRepository.findByGameRoomAndUser(gameRoom, user)
+                .orElseThrow(() -> new IllegalArgumentException("입장한 방이 아닙니다."));
+
+        gamePlayer.ready();
+        gamePlayerRepository.save(gamePlayer);
+    }
+
+    // 준비 취소
+    @Transactional
+    public void cancelReady(Long roomId, String username) {
+
+        GameRoom gameRoom = gameRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        GamePlayer gamePlayer = gamePlayerRepository.findByGameRoomAndUser(gameRoom, user)
+                .orElseThrow(() -> new IllegalArgumentException("입장한 방이 아닙니다."));
+
+        gamePlayer.cancelReady();
+        gamePlayerRepository.save(gamePlayer);
+    }
 }
