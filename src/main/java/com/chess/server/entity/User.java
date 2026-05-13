@@ -45,4 +45,19 @@ public class User {
     public enum UserStatus {
         ACTIVE, INACTIVE
     }
+
+    // 닉네임 수정
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    // 비밀번호 수정 (암호화된 값을 받음)
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    // 이메일 수정
+    public void updateEmail(String email) {
+        this.email = email;
+    }
 }
