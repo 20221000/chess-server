@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChatMessage {
 
-    private Long roomId;        // 방 ID
-    private String sender;      // 보낸 사람 닉네임
-    private String content;     // 채팅 내용
-    private MessageType type;   // 메시지 타입
+    private Long roomId;
+    private String username;    // 내/상대 채팅 구분용
+    private String sender;      // 보낸 사람 닉네임 (화면 표시용)
+    private String content;
+    private MessageType type;
 
-    // 메시지 타입 (CHAT: 채팅, ENTER: 입장, LEAVE: 퇴장)
     public enum MessageType {
         CHAT, ENTER, LEAVE
     }

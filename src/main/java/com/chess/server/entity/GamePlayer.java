@@ -20,12 +20,10 @@ public class GamePlayer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 어느 방의 플레이어인지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private GameRoom gameRoom;
 
-    // 어느 유저인지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -33,34 +31,56 @@ public class GamePlayer {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private PlayerStatus status = PlayerStatus.WAITING;  // 준비 상태
+    private PlayerStatus status = PlayerStatus.WAITING;
 
     @Enumerated(EnumType.STRING)
     @Column
-    private PieceColor pieceColor;  // 기물 색상 (게임 시작 시 배정)
+    private PieceColor pieceColor;
+
+    // 플레이어/관전자 역할 구분
+    // PLAYER: 대기열, SPECTATOR: 관전석
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private PlayerRole role = PlayerRole.PLAYER;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Builder.Default
-    private LocalDateTime joinedAt = LocalDateTime.now();  // 입장 시간
+    private LocalDateTime joinedAt = LocalDateTime.now();
 
-    // 플레이어 상태 (WAITING: 대기, READY: 준비완료)
     public enum PlayerStatus {
         WAITING, READY
     }
 
-    // 기물 색상 (WHITE: 백, BLACK: 흑)
     public enum PieceColor {
         WHITE, BLACK
     }
 
-    // 준비 상태로 변경
+    public enum PlayerRole {
+        PLAYER, SPECTATOR
+    }
+
     public void ready() {
         this.status = PlayerStatus.READY;
     }
 
-    // 대기 상태로 변경
     public void cancelReady() {
         this.status = PlayerStatus.WAITING;
+    }
+
+    public void assignColor(PieceColor color) {
+        this.pieceColor = color;
+    }
+
+    // 관전자로 역할 변경
+    public void switchToSpectator() {
+        this.role = PlayerRole.SPECTATOR;
+        this.status = PlayerStatus.WAITING;  // 준비 상태 초기화
+    }
+
+    // 플레이어로 역할 변경
+    public void switchToPlayer() {
+        this.role = PlayerRole.PLAYER;
     }
 }

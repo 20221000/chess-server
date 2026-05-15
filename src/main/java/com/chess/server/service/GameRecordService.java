@@ -8,10 +8,12 @@ import com.chess.server.exception.BadRequestException;
 import com.chess.server.exception.DuplicateException;
 import com.chess.server.exception.NotFoundException;
 import com.chess.server.repository.*;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +26,10 @@ public class GameRecordService {
     private final GameMoveRepository gameMoveRepository;
     private final GameRepository gameRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
-    // 게임 종료 시 기보 자동 저장 (참여자용)
+    // 게임 종료 시 기보 수동 저장 (참여자용)
+    // existsByGameAndOwner 체크 제거 → INSERT IGNORE가 DB 레벨에서 중복 처리
     @Transactional
     public void saveRecord(Long gameId, String username) {
 
@@ -35,19 +39,27 @@ public class GameRecordService {
         User owner = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
-        // 이미 저장된 기보인지 확인
-        if (gameRecordRepository.findByGame(game).isPresent()) {
-            throw new DuplicateException("이미 저장된 기보입니다.");
-        }
+        String whiteNick = game.getWhitePlayer().getNickname();
+        String blackNick = game.getBlackPlayer().getNickname();
+        String resultText = game.getResult() != null ? switch (game.getResult()) {
+            case WHITE_WIN -> "백 승";
+            case BLACK_WIN -> "흑 승";
+            case DRAW -> "무승부";
+        } : "";
 
-        GameRecord gameRecord = GameRecord.builder()
-                .game(game)
-                .owner(owner)
-                .title(game.getWhitePlayer().getNickname() + " vs " +
-                        game.getBlackPlayer().getNickname())
-                .build();
+        String title = String.format("%s(백) vs %s(흑) - %s", whiteNick, blackNick, resultText);
 
-        gameRecordRepository.save(gameRecord);
+        // INSERT IGNORE: 중복 시 DB 레벨에서 무시 → Hibernate 예외 없음
+        entityManager.createNativeQuery(
+                        "INSERT IGNORE INTO game_records (created_at, game_id, owner_id, title, visibility) " +
+                                "VALUES (:createdAt, :gameId, :ownerId, :title, :visibility)"
+                )
+                .setParameter("createdAt", LocalDateTime.now())
+                .setParameter("gameId", game.getId())
+                .setParameter("ownerId", owner.getId())
+                .setParameter("title", title)
+                .setParameter("visibility", "PUBLIC")
+                .executeUpdate();
     }
 
     // 남의 기보 저장

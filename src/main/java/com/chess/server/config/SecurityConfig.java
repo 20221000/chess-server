@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +29,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // CORS 설정 적용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // JWT 사용하므로 CSRF 비활성화
                 .csrf(csrf -> csrf.disable())
                 // JWT 사용하므로 세션 비활성화
@@ -31,24 +38,37 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 요청별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인, 회원가입은 누구나 접근 가능
                         .requestMatchers("/api/auth/**").permitAll()
-                        // WebSocket 누구나 접근 가능
                         .requestMatchers("/ws/**").permitAll()
-                        // 나머지는 로그인 필요
                         .anyRequest().authenticated()
                 )
-                // JWT 필터를 Security 필터 앞에 추가
                 .addFilterBefore(
                         new JwtFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                // 기본 로그인 폼 비활성화
                 .formLogin(form -> form.disable())
-                // HTTP Basic 인증 비활성화
                 .httpBasic(basic -> basic.disable());
 
         return http.build();
+    }
+
+    // CORS 설정 (React 개발 서버 허용)
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // React 개발 서버 허용
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        // 허용할 HTTP 메서드
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        // 허용할 헤더
+        config.setAllowedHeaders(List.of("*"));
+        // 인증 정보 포함 허용
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     // 비밀번호 암호화 (BCrypt)

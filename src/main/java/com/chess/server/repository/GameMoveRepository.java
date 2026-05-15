@@ -13,4 +13,7 @@ public interface GameMoveRepository extends JpaRepository<GameMove, Long> {
 
     // 게임의 총 착수 수 조회
     int countByGame(Game game);
+
+    // 다시하기 시 기존 착수 기록 전체 삭제
+    void deleteByGame(Game game);
 }

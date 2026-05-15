@@ -16,6 +16,6 @@ public class CreateRoomRequest {
     private String title;       // 방 제목
 
     @Min(2)
-    @Max(10)
-    private int maxPlayers;     // 최대 인원 (2~10명)
+    @Max(10000)
+    private int maxPlayers;     // 최대 인원 (2~10000명)
 }

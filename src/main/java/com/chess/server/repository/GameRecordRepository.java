@@ -19,4 +19,7 @@ public interface GameRecordRepository extends JpaRepository<GameRecord, Long> {
 
     // 게임으로 기보 조회
     Optional<GameRecord> findByGame(Game game);
+
+    // 중복 저장 방지용 — 해당 게임/소유자 기보 존재 여부 확인
+    boolean existsByGameAndOwner(Game game, User owner);
 }
